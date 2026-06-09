@@ -30,9 +30,9 @@ Group: Motion Masters
 
 ## Table of Contents
 
-- [Question 1: Carnation Environmental Requirements](#question-1-carnation-environmental-requirements)
-- [Question 2: Hardware Components for Environmental Monitoring Embedded Device](#question-2-hardware-components-for-environmental-monitoring-embedded-device)
-- [Conclusion](#conclusion)
+- [Question 1](#question-1)
+- [Question 2](#question-2)
+- [Components](#components)
 
 ---
 
