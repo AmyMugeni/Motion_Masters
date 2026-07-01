@@ -27,7 +27,7 @@ Group: Motion Masters
 - [Question 1a](#question-1a)
 - [Question 1b](#question-1b)
 - [Question 1c](#question-1c)
-- [Challenges Faced](#challenges-faced)
+- [Challenges Faced](#challenges-faced-across-simulations-b--c)
 
 ---
 
