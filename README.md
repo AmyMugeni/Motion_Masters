@@ -1,17 +1,24 @@
-![Strathmore University Logo](images/university-logo.png)
+<div align="center">
+
+<img src="images/university-logo.png" alt="Strathmore University Logo" width="190" />
 
 # Motion Masters Project ICS 4A
 
 **Strathmore University**
-Bachelor Of Science in Informatics and Computer Science (BICS)
-Embedded Systems and Internet of Things (IOT)
+
+Bachelor of Science in Informatics and Computer Science (BICS)
+
+Embedded Systems and Internet of Things (IoT)
+
 ICS 4A
 
 Deliverable 3
 
 Group: Motion Masters
 
-![Motion Masters Group Photo](images/group-photo.jpg)
+<img src="images/group-photo.jpg" alt="Motion Masters Group Photo" width="720" />
+
+</div>
 
 ---
 
@@ -22,102 +29,169 @@ Group: Motion Masters
 - [How We Did It Online (VS Code + Wokwi + PlatformIO)](#how-we-did-it-online-vs-code--wokwi--platformio)
 - [How We Did It As a Group (Lab Setup)](#how-we-did-it-as-a-group-lab-setup)
 - [Cloud Storage and Visualisation](#cloud-storage-and-visualisation)
-- [Public Links](#public-links)
 - [Known Limitations](#known-limitations)
 
 ---
 
 ## Overview
 
-Deliverable 3 extends the Motion Masters sensor rig with cloud-based data storage and live visualisation. Sensor readings (temperature, humidity, gas conc) are sampled on an ESP32-S2, batched, and written to **InfluxDB Cloud** — a time-series database — over HTTPS. A **Grafana** dashboard then reads from InfluxDB to display the data through three live visualisations: a time-series graph, a gauge, and a stat panel.
-
-![System Architecture Diagram](images/system-architecture.png)
-*Figure 1: Data flow from sensors through the ESP32-S2 to InfluxDB Cloud and Grafana.*
+Deliverable 3 extends the Motion Masters sensor rig by integrating cloud storage and live data visualisation. Sensor readings from the DHT22 and MQ-5 sensors are collected by an ESP32-S2, temporarily stored in a batch buffer, uploaded to InfluxDB Cloud, and visualised using Grafana.
 
 ---
 
 ## System Architecture
 
-```
-Sensors (DHT22 + MQ-5) → ESP32-S2 firmware → Batch buffer → InfluxDB Cloud → Grafana dashboard
-                                              ↓
-                                        OLED display
+```text
+Sensors (DHT22 + MQ-5)
+          │
+          ▼
+      ESP32-S2 Firmware
+          │
+          ▼
+      Batch Buffer
+          │
+          ▼
+    InfluxDB Cloud
+          │
+          ▼
+ Grafana Dashboard
+
+          │
+          ▼
+     OLED Display
 ```
 
-- **DHT22** — temperature and humidity
-- **MQ-5** — gas concentration (LPG/natural gas)
-- **ESP32-S2** — samples sensors every 2 seconds, shows live values on an OLED, and batches readings for upload
-- **InfluxDB Cloud** — stores every reading as a timestamped point in a time-series bucket
-- **Grafana** — queries InfluxDB and renders the dashboard
+The system components are:
+
+- **DHT22** – Measures temperature and humidity.
+- **MQ-5** – Measures gas concentration.
+- **ESP32-S2** – Reads sensors every two seconds, displays live values on the OLED, and uploads batches of readings.
+- **InfluxDB Cloud** – Stores timestamped sensor readings in a time-series database.
+- **Grafana** – Retrieves the stored data and presents it through live dashboards.
 
 ---
 
 ## How We Did It Online (VS Code + Wokwi + PlatformIO)
 
-We built and tested the full pipeline in simulation before/alongside physical hardware, using:
+The project was first developed and tested in simulation before being deployed on physical hardware.
 
-- **VS Code** with the **PlatformIO** extension (firmware build system and library management) and the **Wokwi for VS Code** extension (circuit simulator)
-- **Wokwi** simulates the ESP32-S2, DHT22, MQ-5, and OLED wiring, and gives the simulated board real internet access via its `Wokwi-GUEST` network — so the simulated device can genuinely reach InfluxDB Cloud over HTTPS
-- **PlatformIO** compiles `src/main.cpp` into firmware that Wokwi then runs
+We used:
 
-### Steps followed:
-1. Wired the components in `diagram.json` (ESP32-S2, DHT22, MQ-5, SSD1306 OLED) — see `diagram.json` in this repo.
-2. Wrote firmware (`src/main.cpp`) that:
-   - Samples the DHT22 and MQ-5 every 2 seconds
-   - Displays live readings on the OLED
-   - Batches readings and sends them to InfluxDB Cloud in a single HTTPS write every ~10 seconds, using NTP-synced timestamps so each reading lands as a distinct data point
-3. Set up an InfluxDB Cloud account, created a bucket (`sensor_data`), and generated an API token.
-4. Built a Grafana dashboard (`grafana-dashboard.json`) with three panels reading from that bucket.
-5. Ran the simulation in Wokwi and confirmed data appeared in both InfluxDB's Data Explorer and the live Grafana dashboard.
+- **Visual Studio Code**
+- **PlatformIO**
+- **Wokwi for VS Code**
 
-![Wokwi Simulation Running](images/wokwi-simulation.png)
-*Figure 2: Wokwi simulation showing live sensor output and successful InfluxDB writes in the terminal.*
+PlatformIO was used to build the firmware while Wokwi simulated the ESP32-S2, DHT22, MQ-5, and OLED display. Wokwi's internet access through the `Wokwi-GUEST` network allowed the simulated ESP32 to communicate directly with InfluxDB Cloud over HTTPS.
 
-Full setup instructions (InfluxDB account setup, PlatformIO build steps, dependencies) are documented in this repo's `README.md`-adjacent setup guide / build notes.
+### Steps Followed
+
+1. Created the circuit in `diagram.json`.
+2. Developed `src/main.cpp` to:
+   - Read the DHT22 and MQ-5 every two seconds.
+   - Display readings on the OLED.
+   - Batch readings and upload them to InfluxDB Cloud every ten seconds.
+3. Created an InfluxDB Cloud bucket and generated an API token.
+4. Connected Grafana to InfluxDB Cloud.
+5. Designed a dashboard containing three visualisations.
+6. Verified that data appeared correctly in both InfluxDB and Grafana.
+
+---
+
+### Wokwi Simulation
+
+<p align="center">
+<img src="images/wokwi-simulation.png" alt="Wokwi Simulation" width="720" />
+</p>
+
+<p align="center">
+<em>Figure 1: Wokwi simulation showing the ESP32-S2, sensors, OLED display, and successful InfluxDB uploads.</em>
+</p>
 
 ---
 
 ## How We Did It As a Group (Lab Setup)
 
-![Group Working in the Lab](images/lab-setup-1.jpg)
-*Figure 3: The team assembling and testing the physical sensor rig in the lab.*
+The simulated project was then recreated using the physical ESP32-S2 development board.
 
-![Physical Hardware Setup](images/lab-setup-2.jpg)
-*Figure 4: Physical wiring of the ESP32-S2 with DHT22 and MQ-5.*
+The same firmware (`main.cpp`) was uploaded to the ESP32-S2 using the Arduino IDE. The simulation WiFi credentials were replaced with our local WiFi credentials while keeping the same InfluxDB Cloud bucket, organisation, and API token.
 
-As a group, we assembled the physical components (ESP32-S2, DHT22, MQ-5, and OLED display) and wired them according to the same layout used in the Wokwi simulation. We then loaded `main.cpp` and `secrets.h` onto the board using the Arduino IDE, replacing the simulation-only WiFi credentials (`Wokwi-GUEST`) with our real WiFi network credentials, while keeping the same InfluxDB Cloud credentials (organisation, bucket, and API token) used in the online/simulated version. As the sensors captured live readings — visible in real time on the OLED display — the same data was simultaneously transmitted to InfluxDB Cloud and appeared live on the Grafana dashboard, confirming that the physical setup and the simulated setup both fed into the same cloud pipeline correctly.
+The DHT22, MQ-5, and OLED display were connected using the same wiring used in the simulation. Live sensor readings appeared on the OLED display and were simultaneously uploaded to InfluxDB Cloud, where they became immediately available on the Grafana dashboard.
+
+---
+
+### Team Working in the Lab
+
+<p align="center">
+<img src="images/lab-setup-1.jpg" alt="Lab Setup" width="650" />
+</p>
+
+<p align="center">
+<em>Figure 2: Team assembling and testing the physical implementation.</em>
+</p>
+
+---
+
+### Physical Hardware Setup
+
+<p align="center">
+<img src="images/lab-setup-2.jpg" alt="Physical Hardware" width="650" />
+</p>
+
+<p align="center">
+<em>Figure 3: ESP32-S2 connected to the DHT22, MQ-5, and OLED display.</em>
+</p>
 
 ---
 
 ## Cloud Storage and Visualisation
 
-### InfluxDB — Time-Series Storage
+### InfluxDB Cloud
 
-![InfluxDB Data Explorer](images/influxdb-data-explorer.png)
-*Figure 5: Stored sensor data in InfluxDB's Data Explorer, showing temperature, humidity, and gas readings over time.*
+<p align="center">
+<img src="images/influxdb-data-explorer.png" alt="InfluxDB Data Explorer" width="720" />
+</p>
 
-### Grafana — Dashboard (3 Visualisations)
-
-![Grafana Dashboard](images/grafana-dashboard1.png) (images/grafana-dashboard2.png)
-*Figure 6: Live Grafana dashboard with time-series, gauge, and stat panels.*
-
-The dashboard includes:
-1. **Time Series** — Temperature & Humidity Over Time
-2. **Gauge** — Live Gas Level with colour-coded thresholds
-3. **Stat Panel** — Latest Readings across all three metrics
+<p align="center">
+<em>Figure 4: Sensor readings stored in InfluxDB Cloud.</em>
+</p>
 
 ---
 
-## Public Links
+### Grafana Dashboard
 
-- **Wokwi Public Project:** [add link here]
-- **Grafana Public Dashboard:** [add link here]
-- **InfluxDB Data:** see screenshot above (public link not available on current plan)
+<p align="center">
+<img src="images/grafana-dashboard1.png" alt="Grafana Dashboard 1" width="720" />
+</p>
+
+<p align="center">
+<em>Figure 5: Grafana dashboard showing the time-series visualisation.</em>
+</p>
+
+---
+
+<p align="center">
+<img src="images/grafana-dashboard2.png" alt="Grafana Dashboard 2" width="720" />
+</p>
+
+<p align="center">
+<em>Figure 6: Grafana dashboard showing the gauge and stat panels.</em>
+</p>
+
+---
+
+The dashboard includes three visualisations:
+
+1. **Time Series** – Temperature and humidity trends over time.
+2. **Gauge** – Live gas concentration with colour thresholds.
+3. **Stat Panel** – Latest temperature, humidity, and gas readings.
 
 ---
 
 ## Known Limitations
 
-- TLS certificate validation is disabled in the firmware (`client.setInsecure()`) for simplicity in the simulated environment; a production deployment would use certificate pinning instead.
-- The Grafana dashboard's bucket name is hardcoded to `sensor_data` to match this project's configuration.
-- See `src/main.cpp` and the project's build documentation for full technical notes.
+- TLS certificate verification is disabled (`client.setInsecure()`) to simplify HTTPS communication during testing.
+- The firmware currently uses a fixed InfluxDB bucket name (`sensor_data`).
+- Internet connectivity is required for uploading sensor data.
+- Additional implementation details are available in `src/main.cpp` and the project documentation.
+
+---
